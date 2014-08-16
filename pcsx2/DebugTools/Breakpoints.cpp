@@ -28,6 +28,74 @@ std::vector<MemCheck> CBreakPoints::memChecks_;
 std::vector<MemCheck *> CBreakPoints::cleanupMemChecks_;
 bool CBreakPoints::breakpointTriggered_ = false;
 
+class ExecuteHistory
+{
+public:
+	ExecuteHistory()
+	{
+		tail = 0;
+		memset(addresses,0xFF,sizeof(addresses));
+	}
+
+	void __fi add(u32 address)
+	{
+		u32 numElemens = sizeof(addresses)/sizeof(addresses[0]);
+
+		addresses[tail] = address;
+		tail = (tail+1) % numElemens;
+	}
+
+	std::map<u32,int> createMap()
+	{
+		u32 numElemens = sizeof(addresses)/sizeof(addresses[0]);
+
+		// calculate the size here, so that it doesn't need to be
+		// updated during the recompiler. saves 4 opcodes and a jump.
+		// addresses are always 4 byte aligned, so no valid address can ever be
+		// 0xFFFFFFFF
+		u32 size = 0;
+		for (int i = 0; i < numElemens; i++)
+		{
+			if (addresses[i] != 0xFFFFFFFF)
+				size++;
+		}
+
+		u32 head = 0;
+		if (size == numElemens)
+			head = (tail+1) % numElemens;
+
+		std::map<u32,int> map;
+		for (int i = 0; i < size; i++)
+		{
+			int pos = (head+i) % (sizeof(addresses)/sizeof(addresses[0]));
+			u32 value = standardizeBreakpointAddress(addresses[pos]);
+
+			int history = size-i-1;
+			if (history == 0)
+				history = numElemens;
+
+			map[value] = history;
+		}
+
+		return map;
+	}
+private:
+	u32 addresses[256];
+	u32 tail;
+};
+
+
+ExecuteHistory executeHistory;
+void __fastcall addAddressToHistory(u32 address)
+{
+	executeHistory.add(address);
+}
+
+std::map<u32,int> getHistoryMap()
+{
+	return executeHistory.createMap();
+}
+
 // called from the dynarec
 u32 __fastcall standardizeBreakpointAddress(u32 addr)
 {

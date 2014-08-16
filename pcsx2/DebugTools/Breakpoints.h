@@ -18,6 +18,7 @@
 #pragma once
 
 #include <vector>
+#include <map>
 
 #include "DebugInterface.h"
 #include "Pcsx2Types.h"
@@ -163,3 +164,6 @@ private:
 
 // called from the dynarec
 u32 __fastcall standardizeBreakpointAddress(u32 addr);
+
+void __fastcall addAddressToHistory(u32 address);
+std::map<u32,int> getHistoryMap();

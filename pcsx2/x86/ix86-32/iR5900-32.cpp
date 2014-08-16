@@ -1529,6 +1529,9 @@ void recompileNextInstruction(int delayslot)
 		encodeMemcheck();
 	}
 
+	xMOV(ecx,pc);
+	xCALL(addAddressToHistory);
+
 	s_pCode = (int *)PSM( pc );
 	pxAssert(s_pCode);
 	

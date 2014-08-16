@@ -484,6 +484,7 @@ void CtrlDisassemblyView::render(wxDC& dc)
 	bool hasFocus = wxWindow::FindFocus() == this;
 	
 	std::map<u32,int> addressPositions;
+	std::map<u32,int> history = getHistoryMap();
 
 	unsigned int address = windowStart;
 
@@ -553,6 +554,27 @@ void CtrlDisassemblyView::render(wxDC& dc)
 		dc.SetFont(boldFont);
 		dc.DrawText(wxString(line.name.c_str(),wxConvUTF8),pixelPositions.opcodeStart,rowY1+2);
 		
+		if (cpu->isCpuPaused())
+		{
+			int historyIndex = -1;
+
+			auto index = history.find(standardizeBreakpointAddress(address));
+			if (index != history.end())
+				historyIndex = index->second;
+
+			if (address == cpu->getPC())
+				historyIndex = 0;
+
+			if (historyIndex >= 0)
+			{
+				char num[8];
+				sprintf(num,"%3d",historyIndex);
+
+				int xx = totalWidth-7*charWidth;
+				dc.DrawText(wxString(num,wxConvUTF8),xx,rowY1+2);
+			}
+		}
+
 		address += line.totalSize;
 	}
 
