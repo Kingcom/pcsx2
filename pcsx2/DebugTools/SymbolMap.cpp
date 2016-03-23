@@ -620,6 +620,18 @@ bool SymbolMap::GetLabelValue(const char* name, u32& dest) {
 	return false;
 }
 
+void SymbolMap::GetLabels(std::vector<LabelDefinition>& dest) const
+{
+	Threading::ScopedLock guard(lock_);
+
+	for (auto it = activeLabels.begin(); it != activeLabels.end(); it++) {
+		LabelDefinition entry;
+		entry.value = it->first;
+		entry.name = convertUtf8ToWString(it->second.name);
+		dest.push_back(entry);
+	}
+}
+
 void SymbolMap::AddData(u32 address, u32 size, DataType type, int moduleIndex) {
 	Threading::ScopedLock guard(lock_);
 
