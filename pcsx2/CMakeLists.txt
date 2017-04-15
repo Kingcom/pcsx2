@@ -585,7 +585,6 @@ set(pcsx2DebugToolsSources
 	DebugTools/ExpressionParser.cpp
 	DebugTools/MIPSAnalyst.cpp
 	DebugTools/MipsAssembler.cpp
-	DebugTools/MipsAssemblerTables.cpp
 	DebugTools/MipsStackWalk.cpp
 	DebugTools/Breakpoints.cpp
 	DebugTools/SymbolMap.cpp
@@ -602,7 +601,6 @@ set(pcsx2DebugToolsHeaders
 	DebugTools/ExpressionParser.h
 	DebugTools/MIPSAnalyst.h
 	DebugTools/MipsAssembler.h
-	DebugTools/MipsAssemblerTables.h
 	DebugTools/MipsStackWalk.h
 	DebugTools/Breakpoints.h
 	DebugTools/SymbolMap.h
@@ -1081,6 +1079,7 @@ set(pcsx2FinalLibs
     Utilities
     x86emitter
     fmt::fmt
+    armips
     ${wxWidgets_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${ZLIB_LIBRARIES}
@@ -1112,6 +1111,7 @@ include_directories(
     gui
     x86
     ${CMAKE_BINARY_DIR}/pcsx2/gui
+    ${CMAKE_SOURCE_DIR}/3rdparty/armips
 )
 
 ### Generate the resources files
