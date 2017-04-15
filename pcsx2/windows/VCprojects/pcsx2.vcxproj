@@ -264,7 +264,6 @@
     <ClCompile Include="..\..\DebugTools\ExpressionParser.cpp" />
     <ClCompile Include="..\..\DebugTools\MIPSAnalyst.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsAssembler.cpp" />
-    <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="..\..\DebugTools\SymbolMap.cpp" />
     <ClCompile Include="..\..\DEV9\DEV9.cpp" />
@@ -625,7 +624,6 @@
     <ClInclude Include="..\..\DebugTools\ExpressionParser.h" />
     <ClInclude Include="..\..\DebugTools\MIPSAnalyst.h" />
     <ClInclude Include="..\..\DebugTools\MipsAssembler.h" />
-    <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="..\..\DebugTools\MipsStackWalk.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
     <ClInclude Include="..\..\DEV9\ata.h" />
@@ -910,6 +908,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\portaudio\build\msvc\portaudio.vcxproj">
       <Project>{0a18a071-125e-442f-aff7-a3f68abecf99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\armips\libarmips.vcxproj">
+      <Project>{129e5e2b-39c1-4d84-96fe-dfd22dbb4a25}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
       <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
