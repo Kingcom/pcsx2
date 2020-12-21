@@ -20,6 +20,8 @@
 #include "R5900OpcodeTables.h"
 #include "iR5900LoadStore.h"
 #include "iR5900.h"
+#include "R5900Exceptions.h"
+
 
 using namespace x86Emitter;
 
@@ -93,25 +95,41 @@ using namespace Interpreter::OpcodeImpl;
 
 __aligned16 u32 dummyValue[4];
 
+void __fastcall checkReadAccess(u32 addr, u32 alignment)
+{
+	if (addr % alignment)
+		Cpu->ThrowCpuException(::R5900Exception::AddressError(addr, false));
+}
+
+void __fastcall checkWriteAccess(u32 addr, u32 alignment)
+{
+	if (addr % alignment)
+		Cpu->ThrowCpuException(::R5900Exception::AddressError(addr, true));
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 void recLoad64( u32 bits, bool sign )
 {
 	pxAssume( bits == 64 || bits == 128 );
 
-	// Load arg2 with the destination.
-	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
-
-	if (_Rt_)
-		xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-	else
-		xLEA(arg2reg, ptr[&dummyValue[0]]);
-
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 		if (bits == 128)
 			srcadr &= ~0x0f;
+
+		xMOV(ecx, srcadr);
+		xMOV(edx, bits / 8);
+		xFastCall((void*)checkReadAccess, ecx, edx);
+
+		// Load arg2 with the destination.
+		// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
+
+		if (_Rt_)
+			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		else
+			xLEA(arg2reg, ptr[&dummyValue[0]]);
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -126,6 +144,26 @@ void recLoad64( u32 bits, bool sign )
 			xADD(arg1regd, _Imm_);
 		if (bits == 128)		// force 16 byte alignment on 128 bit reads
 			xAND(arg1regd, ~0x0F);
+
+		xMOV(ecx, arg1regd);
+		xMOV(edx, bits / 8);
+		xFastCall((void*)checkReadAccess, ecx, edx);
+
+		// Load arg2 with the destination.
+		// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
+
+		if (_Rt_)
+			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		else
+			xLEA(arg2reg, ptr[&dummyValue[0]]);
+
+		// Load ECX with the source memory address that we're reading from.
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+		if (bits == 128) // force 16 byte alignment on 128 bit reads
+			xAND(arg1regd, ~0x0F);
+
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -143,9 +181,15 @@ void recLoad32( u32 bits, bool sign )
 
 	// 8/16/32 bit modes return the loaded value in EAX.
 
+	auto bytes = bits / 8;
+
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+
+		xMOV(ecx, srcadr);
+		xMOV(edx, bits/8);
+		xFastCall((void*)checkReadAccess, ecx, edx);
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -158,6 +202,15 @@ void recLoad32( u32 bits, bool sign )
 		_eeMoveGPRtoR(arg1regd, _Rs_);
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_ );
+
+		xMOV(ecx, arg1regd);
+		xMOV(edx, bits / 8);
+		xFastCall((void*)checkReadAccess, ecx, edx);
+
+		// Load arg1 with the source memory address that we're reading from.
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -189,19 +242,6 @@ void recStore(u32 bits)
         // Constprop for the value being stored is not really worthwhile (better to use register
         // allocation -- simpler code and just as fast)
 
-        // Load EDX first with the value being written, or the address of the value
-        // being written (64/128 bit modes).
-
-        if (bits < 64)
-        {
-                _eeMoveGPRtoR(arg2regd, _Rt_);
-        }
-        else if (bits == 128 || bits == 64)
-        {
-                _flushEEreg(_Rt_);          // flush register to mem
-                xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-        }
-
         // Load ECX with the destination address, or issue a direct optimized write
         // if the address is a constant propagation.
 
@@ -210,6 +250,23 @@ void recStore(u32 bits)
                 u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
                 if (bits == 128)
 					dstadr &= ~0x0f;
+
+				xMOV(ecx, dstadr);
+				xMOV(edx, bits / 8);
+				xFastCall((void*)checkWriteAccess, ecx, edx);
+
+				// Load EDX first with the value being written, or the address of the value
+				// being written (64/128 bit modes).
+
+				if (bits < 64)
+				{
+					_eeMoveGPRtoR(arg2regd, _Rt_);
+				}
+				else if (bits == 128 || bits == 64)
+				{
+					_flushEEreg(_Rt_); // flush register to mem
+					xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				}
 
                 vtlb_DynGenWrite_Const( bits, dstadr );
         }
@@ -220,6 +277,29 @@ void recStore(u32 bits)
                         xADD(arg1regd, _Imm_);
                 if (bits == 128)
                         xAND(arg1regd, ~0x0F);
+
+				xMOV(ecx, arg1regd);
+				xMOV(edx, bits / 8);
+				xFastCall((void*)checkWriteAccess, ecx, edx);
+
+				// Load EDX first with the value being written, or the address of the value
+				// being written (64/128 bit modes).
+
+				if (bits < 64)
+				{
+					_eeMoveGPRtoR(arg2regd, _Rt_);
+				}
+				else if (bits == 128 || bits == 64)
+				{
+					_flushEEreg(_Rt_); // flush register to mem
+					xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				}
+
+                _eeMoveGPRtoR(arg1regd, _Rs_);
+				if (_Imm_ != 0)
+					xADD(arg1regd, _Imm_);
+				if (bits == 128)
+					xAND(arg1regd, ~0x0F);
 
                 iFlushCall(FLUSH_FULLVTLB);
 

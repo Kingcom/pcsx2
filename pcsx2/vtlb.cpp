@@ -408,14 +408,7 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 		throw Exception::CancelInstruction();
 	}
 
-	if( IsDevBuild )
-		Cpu->ThrowCpuException( R5900Exception::TLBMiss( addr, !!mode ) );
-	else
-	{
-		static int spamStop = 0;
-		if ( spamStop++ < 50 )
-			Console.Error( R5900Exception::TLBMiss( addr, !!mode ).FormatMessage() );
-	}
+	Cpu->ThrowCpuException( R5900Exception::TLBMiss( addr, !!mode ) );
 }
 
 // BusError exception: more serious than a TLB miss.  If properly emulated the PS2 kernel
