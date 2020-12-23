@@ -903,14 +903,14 @@
     <ProjectReference Include="..\..\..\3rdparty\fmt\fmt.vcxproj">
       <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\libarmips.vcxproj">
+      <Project>{129e5e2b-39c1-4d84-96fe-dfd22dbb4a25}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\libsamplerate\libsamplerate.vcxproj">
       <Project>{47afdbef-f15f-4bc0-b436-5be443c3f80f}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\portaudio\build\msvc\portaudio.vcxproj">
       <Project>{0a18a071-125e-442f-aff7-a3f68abecf99}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\3rdparty\armips\libarmips.vcxproj">
-      <Project>{129e5e2b-39c1-4d84-96fe-dfd22dbb4a25}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
       <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>

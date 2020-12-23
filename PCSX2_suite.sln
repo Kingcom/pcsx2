@@ -74,7 +74,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libsamplerate", "3rdparty\l
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "yaml", "3rdparty\yaml-cpp\yaml.vcxproj", "{48329442-E41B-4A1F-8364-36EEE1B71343}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libarmips", "3rdparty\armips\libarmips.vcxproj", "{129E5E2B-39C1-4D84-96FE-DFD22DBB4A25}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libarmips", "3rdparty\libarmips.vcxproj", "{129E5E2B-39C1-4D84-96FE-DFD22DBB4A25}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
