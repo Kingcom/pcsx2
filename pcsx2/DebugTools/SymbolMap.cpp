@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "SymbolMap.h"
+#include "Util/Util.h"
 #include <algorithm>
 
 SymbolMap symbolMap;

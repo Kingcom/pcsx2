@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Core/Assembler.h"
+#include "Core/FileManager.h"
 #include "MipsAssembler.h"
 #include "System.h"
 #include "SymbolMap.h"
@@ -26,7 +27,7 @@ public:
 	Ps2AssemblerFile(DebugInterface* cpu)
 		: cpu(cpu)
 		, address(0)
-		, fileName(L"Memory")
+		, fileName("Memory")
 	{
 	}
 
@@ -58,19 +59,19 @@ public:
 		return true;
 	}
 	bool seekPhysical(int64_t physicalAddress) override { return seekVirtual(physicalAddress); }
-	const std::wstring& getFileName() override { return fileName; }
+	const fs::path& getFileName() override { return fileName; }
 
 private:
 	DebugInterface* cpu;
 	int64_t address;
-	std::wstring fileName;
+	fs::path fileName;
 };
 
 bool MipsAssembleOpcode(const char* line, DebugInterface* cpu, u32 address, std::string& errorText)
 {
 	SysClearExecutionCache();
 
-	StringList errors;
+	std::vector<std::wstring> errors;
 
 	wchar_t str[64];
 	swprintf(str, 64, L".ps2\n.org 0x%08X\n", address);

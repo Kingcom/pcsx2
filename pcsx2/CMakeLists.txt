@@ -1111,7 +1111,6 @@ include_directories(
     gui
     x86
     ${CMAKE_BINARY_DIR}/pcsx2/gui
-    ${CMAKE_SOURCE_DIR}/3rdparty/armips
 )
 
 ### Generate the resources files
